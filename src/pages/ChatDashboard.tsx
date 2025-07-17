@@ -3,20 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Send, 
-  Plus, 
-  MessageSquare, 
-  User, 
-  BarChart3, 
+import {
+  Send,
+  Plus,
+  MessageSquare,
+  User,
+  BarChart3,
   LogOut,
   Bot,
   Clock
@@ -25,13 +25,9 @@ import { useNavigate } from "react-router-dom";
 
 interface ChatMessage {
   id: string;
-  chats: [
-   {
-     content: string,
-      sender: string,
-      timestamp: Date,
-   }
-  ]
+  content: string;
+  sender: 'user' | 'ai';
+  timestamp: Date;
 }
 
 interface ChatSession {
@@ -39,86 +35,135 @@ interface ChatSession {
   title: string;
   lastMessage: Date;
   preview: string;
-  message_id : string
+  messages: ChatMessage[];
 }
 
 const ChatDashboard = () => {
   const navigate = useNavigate();
   const [currentMessage, setCurrentMessage] = useState("");
-    const [seletecMessage, setSeletecMessage] = useState<string>("");
+  const [selectedChatId, setSelectedChatId] = useState<string>("1");
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      chats:[
-        {
-          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
-        sender: "ai",
-        timestamp: new Date()
-        },
-        {
-          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
-        sender: "ai",
-        timestamp: new Date()
-        },
-        {
-          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
-        sender: "ai",
-        timestamp: new Date()
-        },
-      ]
-    },
-      
-  ]);
-
-  const [chatSessions] = useState<ChatSession[]>([
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
     {
       id: "1",
       title: "Aprendiendo Python",
       lastMessage: new Date(),
       preview: "¿Cómo funcionan las listas en Python?",
-      message_id: "1"
+      messages: [
+        {
+          id: "1-1",
+          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
+          sender: "ai",
+          timestamp: new Date(Date.now() - 10000)
+        },
+        {
+          id: "1-2",
+          content: "¿Cómo funcionan las listas en Python?",
+          sender: "user",
+          timestamp: new Date(Date.now() - 5000)
+        },
+        {
+          id: "1-3",
+          content: "Las listas en Python son estructuras de datos ordenadas y mutables. Puedes crear una lista usando corchetes: mi_lista = [1, 2, 3, 'hola']",
+          sender: "ai",
+          timestamp: new Date()
+        }
+      ]
     },
     {
-      id: "2", 
+      id: "2",
       title: "React Hooks",
       lastMessage: new Date(Date.now() - 3600000),
       preview: "useState vs useEffect",
-      message_id: "1"
+      messages: [
+        {
+          id: "2-1",
+          content: "Hola, tengo dudas sobre los hooks de React",
+          sender: "user",
+          timestamp: new Date(Date.now() - 7200000)
+        },
+        {
+          id: "2-2",
+          content: "¡Perfecto! Te explico los hooks más importantes. ¿Qué específicamente quieres saber?",
+          sender: "ai",
+          timestamp: new Date(Date.now() - 7000000)
+        },
+        {
+          id: "2-3",
+          content: "¿Cuál es la diferencia entre useState y useEffect?",
+          sender: "user",
+          timestamp: new Date(Date.now() - 3600000)
+        }
+      ]
     },
     {
       id: "3",
       title: "Algoritmos de ordenamiento",
       lastMessage: new Date(Date.now() - 7200000),
       preview: "Bubble sort vs Quick sort",
-      message_id: "2"
+      messages: [
+        {
+          id: "3-1",
+          content: "Necesito entender los algoritmos de ordenamiento",
+          sender: "user",
+          timestamp: new Date(Date.now() - 7200000)
+        },
+        {
+          id: "3-2",
+          content: "Te ayudo con eso. Los algoritmos de ordenamiento son fundamentales. ¿Quieres empezar con bubble sort o quick sort?",
+          sender: "ai",
+          timestamp: new Date(Date.now() - 7000000)
+        }
+      ]
     }
   ]);
 
-  // const sendMessage = () => {
-  //   if (!currentMessage.trim()) return;
+  const sendMessage = () => {
+    if (!currentMessage.trim()) return;
 
-  //   const newUserMessage: ChatMessage = {
-  //     id: Date.now().toString(),
-  //     content: currentMessage,
-  //     sender: "user",
-  //     timestamp: new Date()
-  //   };
+    const newUserMessage: ChatMessage = {
+      id: `${selectedChatId}-${Date.now()}`,
+      content: currentMessage,
+      sender: "user",
+      timestamp: new Date()
+    };
 
-  //   setMessages(prev => [...prev, newUserMessage]);
-  //   setCurrentMessage("");
+    // Actualizar el chat seleccionado con el nuevo mensaje
+    setChatSessions(prev => prev.map(session => {
+      if (session.id === selectedChatId) {
+        return {
+          ...session,
+          messages: [...session.messages, newUserMessage],
+          lastMessage: new Date(),
+          preview: currentMessage
+        };
+      }
+      return session;
+    }));
 
-  //   // Simular respuesta de IA
-  //   setTimeout(() => {
-  //     const aiResponse: ChatMessage = {
-  //       id: (Date.now() + 1).toString(),
-  //       content: "Excelente pregunta. Te ayudo a entender ese concepto paso a paso...",
-  //       sender: "ai",
-  //       timestamp: new Date()
-  //     };
-  //     setMessages(prev => [...prev, aiResponse]);
-  //   }, 1000);
-  // };
+    setCurrentMessage("");
+
+    // Simular respuesta de IA
+    setTimeout(() => {
+      const aiResponse: ChatMessage = {
+        id: `${selectedChatId}-${Date.now() + 1}`,
+        content: "Excelente pregunta. Te ayudo a entender ese concepto paso a paso...",
+        sender: "ai",
+        timestamp: new Date()
+      };
+
+      setChatSessions(prev => prev.map(session => {
+        if (session.id === selectedChatId) {
+          return {
+            ...session,
+            messages: [...session.messages, aiResponse],
+            lastMessage: new Date()
+          };
+        }
+        return session;
+      }));
+    }, 1000);
+  };
 
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat('es-ES', {
@@ -127,22 +172,43 @@ const ChatDashboard = () => {
     }).format(date);
   };
 
-  const pickChat = (id_chat: string) => {
-    
-    setSeletecMessage(id_chat)
-  }
+  const selectChat = (chatId: string) => {
+    setSelectedChatId(chatId);
+  };
 
-  console.log(seletecMessage );
-  
+  const createNewChat = () => {
+    const newChatId = (chatSessions.length + 1).toString();
+    const newChat: ChatSession = {
+      id: newChatId,
+      title: "Nueva conversación",
+      lastMessage: new Date(),
+      preview: "Conversación iniciada",
+      messages: [
+        {
+          id: `${newChatId}-1`,
+          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
+          sender: "ai",
+          timestamp: new Date()
+        }
+      ]
+    };
+
+    setChatSessions(prev => [newChat, ...prev]);
+    setSelectedChatId(newChatId);
+  };
+
+  // Obtener el chat seleccionado
+  const selectedChat = chatSessions.find(chat => chat.id === selectedChatId);
+
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar izquierdo */}
       <div className="w-80 bg-card border-r border-border flex flex-col">
         {/* Header del sidebar */}
         <div className="p-4 border-b border-border">
-          <Button 
-            className="w-full justify-start gap-2 bg-gradient-primary hover:opacity-90"
-            onClick={() => {/* Nueva conversación */}}
+          <Button
+            className="w-full justify-start gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90"
+            onClick={createNewChat}
           >
             <Plus className="w-4 h-4" />
             Nueva conversación
@@ -155,15 +221,16 @@ const ChatDashboard = () => {
             <h3 className="text-sm font-medium text-muted-foreground mb-3">
               Conversaciones recientes
             </h3>
-            {chatSessions.map((session) => {              
-              return (
-              <Card 
+            {chatSessions.map((session) => (
+              <Card
                 key={session.id}
-                className="cursor-pointer hover:bg-accent/50 transition-colors"
+                className={`cursor-pointer hover:bg-accent/50 transition-colors ${selectedChatId === session.id ? 'ring-2 ring-blue-500 bg-accent/30' : ''
+                  }`}
+                onClick={() => selectChat(session.id)}
               >
-                <CardContent onClick={()=>pickChat(session.id) } className="p-3">
+                <CardContent className="p-3">
                   <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                       <MessageSquare className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -181,8 +248,7 @@ const ChatDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            )
-            })}
+            ))}
           </div>
         </ScrollArea>
       </div>
@@ -192,10 +258,15 @@ const ChatDashboard = () => {
         {/* Header */}
         <div className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8   ">
-              <img src="../../public/img/zorro1.png"/>
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <Bot className="w-4 h-4 text-white" />
             </div>
-            <h1 className="text-lg font-semibold">Tutorcito Riwi</h1>
+            <div>
+              <h1 className="text-lg font-semibold">Tutorcito Riwi</h1>
+              {selectedChat && (
+                <p className="text-sm text-muted-foreground">{selectedChat.title}</p>
+              )}
+            </div>
           </div>
 
           <DropdownMenu>
@@ -203,7 +274,7 @@ const ChatDashboard = () => {
               <Button variant="ghost" size="sm">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-gradient-primary text-white">
+                  <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                     <User className="w-4 h-4" />
                   </AvatarFallback>
                 </Avatar>
@@ -226,60 +297,52 @@ const ChatDashboard = () => {
         {/* Área de mensajes */}
         <ScrollArea className="flex-1 p-6">
           <div className="max-w-3xl mx-auto space-y-4">
-             <div>
-              {
-                messages[0].id == seletecMessage && messages[seletecMessage].chats.map((item)=> 
-                  {
-                  console.log(item);
-                  return (
-                     <div
-                key={item.id}
-                className={`flex gap-3 ${
-                  item.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {item.sender === "ai" && (
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="bg-gradient-primary text-white">
-                     <img src="/img/zorro1.png"/>
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                
+            {selectedChat ? (
+              selectedChat.messages.map((message) => (
                 <div
-                  className={`max-w-[80%] rounded-lg p-4 ${
-                    item.sender === "user"
-                      ? "bg-gradient-primary text-white"
-                      : "bg-card border border-border"
-                  }`}
+                  key={message.id}
+                  className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"
+                    }`}
                 >
-                  <p className="text-sm">{item.content}</p>
-                  <p
-                    className={`text-xs mt-2 ${
-                      item.sender === "user"
+                  {message.sender === "ai" && (
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                        <Bot className="w-4 h-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+
+                  <div
+                    className={`max-w-[80%] rounded-lg p-4 ${message.sender === "user"
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                      : "bg-card border border-border"
+                      }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p
+                      className={`text-xs mt-2 ${message.sender === "user"
                         ? "text-white/70"
                         : "text-muted-foreground"
-                    }`}
-                  >
-                    {formatTime(item.timestamp)}
-                  </p>
-                </div>
+                        }`}
+                    >
+                      {formatTime(message.timestamp)}
+                    </p>
+                  </div>
 
-                {messages[seletecMessage].sender === "user" && (
-                  <Avatar className="w-8 h-8">
-                    <AvatarFallback className="bg-accent">
-                      <User className="w-4 h-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+                  {message.sender === "user" && (
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="bg-accent">
+                        <User className="w-4 h-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                <p>Selecciona una conversación para comenzar</p>
               </div>
-                  )
-                }
-                )  
-               
-              }
-             </div>
-             
+            )}
           </div>
         </ScrollArea>
 
@@ -291,11 +354,11 @@ const ChatDashboard = () => {
               onChange={(e) => setCurrentMessage(e.target.value)}
               placeholder="Pregúntame sobre programación..."
               className="flex-1"
-              // onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
             />
-            <Button 
-              // onClick={sendMessage}
-              className="bg-gradient-primary hover:opacity-90"
+            <Button
+              onClick={sendMessage}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90"
               disabled={!currentMessage.trim()}
             >
               <Send className="w-4 h-4" />
