@@ -59,7 +59,7 @@ const LoadingScreen = () => {
         {/* Título */}
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-foreground">
-            EduChat AI
+            Tutorcito Riwi
           </h1>
           <p className="text-lg text-muted-foreground">
             Tu asistente personal de programación

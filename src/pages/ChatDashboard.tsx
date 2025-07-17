@@ -25,9 +25,13 @@ import { useNavigate } from "react-router-dom";
 
 interface ChatMessage {
   id: string;
-  content: string;
-  sender: "user" | "ai";
-  timestamp: Date;
+  chats: [
+   {
+     content: string,
+      sender: string,
+      timestamp: Date,
+   }
+  ]
 }
 
 interface ChatSession {
@@ -35,18 +39,36 @@ interface ChatSession {
   title: string;
   lastMessage: Date;
   preview: string;
+  message_id : string
 }
 
 const ChatDashboard = () => {
   const navigate = useNavigate();
   const [currentMessage, setCurrentMessage] = useState("");
+    const [seletecMessage, setSeletecMessage] = useState<string>("");
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
-      content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
-      sender: "ai",
-      timestamp: new Date()
-    }
+      chats:[
+        {
+          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
+        sender: "ai",
+        timestamp: new Date()
+        },
+        {
+          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
+        sender: "ai",
+        timestamp: new Date()
+        },
+        {
+          content: "¡Hola! Soy tu asistente de programación. ¿En qué puedo ayudarte hoy?",
+        sender: "ai",
+        timestamp: new Date()
+        },
+      ]
+    },
+      
   ]);
 
   const [chatSessions] = useState<ChatSession[]>([
@@ -54,46 +76,49 @@ const ChatDashboard = () => {
       id: "1",
       title: "Aprendiendo Python",
       lastMessage: new Date(),
-      preview: "¿Cómo funcionan las listas en Python?"
+      preview: "¿Cómo funcionan las listas en Python?",
+      message_id: "1"
     },
     {
       id: "2", 
       title: "React Hooks",
       lastMessage: new Date(Date.now() - 3600000),
-      preview: "useState vs useEffect"
+      preview: "useState vs useEffect",
+      message_id: "1"
     },
     {
       id: "3",
       title: "Algoritmos de ordenamiento",
       lastMessage: new Date(Date.now() - 7200000),
-      preview: "Bubble sort vs Quick sort"
+      preview: "Bubble sort vs Quick sort",
+      message_id: "2"
     }
   ]);
 
-  const sendMessage = () => {
-    if (!currentMessage.trim()) return;
+  // const sendMessage = () => {
+  //   if (!currentMessage.trim()) return;
 
-    const newUserMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: currentMessage,
-      sender: "user",
-      timestamp: new Date()
-    };
+  //   const newUserMessage: ChatMessage = {
+  //     id: Date.now().toString(),
+  //     content: currentMessage,
+  //     sender: "user",
+  //     timestamp: new Date()
+  //   };
 
-    setMessages(prev => [...prev, newUserMessage]);
-    setCurrentMessage("");
+  //   setMessages(prev => [...prev, newUserMessage]);
+  //   setCurrentMessage("");
 
-    // Simular respuesta de IA
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: "Excelente pregunta. Te ayudo a entender ese concepto paso a paso...",
-        sender: "ai",
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
-  };
+  //   // Simular respuesta de IA
+  //   setTimeout(() => {
+  //     const aiResponse: ChatMessage = {
+  //       id: (Date.now() + 1).toString(),
+  //       content: "Excelente pregunta. Te ayudo a entender ese concepto paso a paso...",
+  //       sender: "ai",
+  //       timestamp: new Date()
+  //     };
+  //     setMessages(prev => [...prev, aiResponse]);
+  //   }, 1000);
+  // };
 
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat('es-ES', {
@@ -102,6 +127,13 @@ const ChatDashboard = () => {
     }).format(date);
   };
 
+  const pickChat = (id_chat: string) => {
+    
+    setSeletecMessage(id_chat)
+  }
+
+  console.log(seletecMessage );
+  
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar izquierdo */}
@@ -123,12 +155,13 @@ const ChatDashboard = () => {
             <h3 className="text-sm font-medium text-muted-foreground mb-3">
               Conversaciones recientes
             </h3>
-            {chatSessions.map((session) => (
+            {chatSessions.map((session) => {              
+              return (
               <Card 
                 key={session.id}
                 className="cursor-pointer hover:bg-accent/50 transition-colors"
               >
-                <CardContent className="p-3">
+                <CardContent onClick={()=>pickChat(session.id) } className="p-3">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                       <MessageSquare className="w-4 h-4 text-white" />
@@ -148,7 +181,8 @@ const ChatDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )
+            })}
           </div>
         </ScrollArea>
       </div>
@@ -158,10 +192,10 @@ const ChatDashboard = () => {
         {/* Header */}
         <div className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <Bot className="w-5 h-5 text-white" />
+            <div className="w-8 h-8   ">
+              <img src="../../public/img/zorro1.png"/>
             </div>
-            <h1 className="text-lg font-semibold">EduChat AI</h1>
+            <h1 className="text-lg font-semibold">Tutorcito Riwi</h1>
           </div>
 
           <DropdownMenu>
@@ -192,41 +226,46 @@ const ChatDashboard = () => {
         {/* Área de mensajes */}
         <ScrollArea className="flex-1 p-6">
           <div className="max-w-3xl mx-auto space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
+             <div>
+              {
+                messages[0].id == seletecMessage && messages[seletecMessage].chats.map((item)=> 
+                  {
+                  console.log(item);
+                  return (
+                     <div
+                key={item.id}
                 className={`flex gap-3 ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
+                  item.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {message.sender === "ai" && (
+                {item.sender === "ai" && (
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-gradient-primary text-white">
-                      <Bot className="w-4 h-4" />
+                     <img src="/img/zorro1.png"/>
                     </AvatarFallback>
                   </Avatar>
                 )}
                 
                 <div
                   className={`max-w-[80%] rounded-lg p-4 ${
-                    message.sender === "user"
+                    item.sender === "user"
                       ? "bg-gradient-primary text-white"
                       : "bg-card border border-border"
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm">{item.content}</p>
                   <p
                     className={`text-xs mt-2 ${
-                      message.sender === "user"
+                      item.sender === "user"
                         ? "text-white/70"
                         : "text-muted-foreground"
                     }`}
                   >
-                    {formatTime(message.timestamp)}
+                    {formatTime(item.timestamp)}
                   </p>
                 </div>
 
-                {message.sender === "user" && (
+                {messages[seletecMessage].sender === "user" && (
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-accent">
                       <User className="w-4 h-4" />
@@ -234,7 +273,13 @@ const ChatDashboard = () => {
                   </Avatar>
                 )}
               </div>
-            ))}
+                  )
+                }
+                )  
+               
+              }
+             </div>
+             
           </div>
         </ScrollArea>
 
@@ -246,10 +291,10 @@ const ChatDashboard = () => {
               onChange={(e) => setCurrentMessage(e.target.value)}
               placeholder="Pregúntame sobre programación..."
               className="flex-1"
-              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+              // onKeyPress={(e) => e.key === "Enter" && sendMessage()}
             />
             <Button 
-              onClick={sendMessage}
+              // onClick={sendMessage}
               className="bg-gradient-primary hover:opacity-90"
               disabled={!currentMessage.trim()}
             >
