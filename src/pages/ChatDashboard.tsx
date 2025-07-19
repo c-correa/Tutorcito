@@ -38,6 +38,13 @@ interface ChatSession {
   messages: ChatMessage[];
 }
 
+
+import { sendMessageToAI } from "@/integrations/supabase/chat";
+
+// ...
+
+
+
 const ChatDashboard = () => {
   const navigate = useNavigate();
   const [currentMessage, setCurrentMessage] = useState("");
@@ -118,7 +125,7 @@ const ChatDashboard = () => {
     }
   ]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!currentMessage.trim()) return;
 
     const newUserMessage: ChatMessage = {
@@ -143,27 +150,34 @@ const ChatDashboard = () => {
 
     setCurrentMessage("");
 
-    // Simular respuesta de IA
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: `${selectedChatId}-${Date.now() + 1}`,
-        content: "Excelente pregunta. Te ayudo a entender ese concepto paso a paso...",
-        sender: "ai",
-        timestamp: new Date()
-      };
+// Llamada real a la IA
+  const selectedChat = chatSessions.find(chat => chat.id === selectedChatId);
+  const messages = selectedChat ? selectedChat.messages.concat(newUserMessage) : [newUserMessage];
 
-      setChatSessions(prev => prev.map(session => {
-        if (session.id === selectedChatId) {
-          return {
-            ...session,
-            messages: [...session.messages, aiResponse],
-            lastMessage: new Date()
-          };
-        }
-        return session;
-      }));
-    }, 1000);
-  };
+  try {
+    const aiResponseText = await sendMessageToAI(currentMessage);
+    const aiResponse: ChatMessage = {
+      id: `${selectedChatId}-${Date.now() + 1}`,
+      content: aiResponseText,
+      sender: "ai",
+      timestamp: new Date()
+    };
+
+    setChatSessions(prev => prev.map(session => {
+      if (session.id === selectedChatId) {
+        return {
+          ...session,
+          messages: [...session.messages, aiResponse],
+          lastMessage: new Date()
+        };
+      }
+      return session;
+    }));
+  } catch (error) {
+    // Manejo de error
+    console.error("Error al obtener respuesta de la IA:", error);
+  }
+};
 
   const formatTime = (date: Date) => {
     return new Intl.DateTimeFormat('es-ES', {
