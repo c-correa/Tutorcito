@@ -17,7 +17,7 @@ const LoadingScreen = () => {
   ];
 
   useEffect(() => {
-    const duration = 30000; // 30 segundos
+    const duration = 3000; // 30 segundos
     const interval = 100; // actualizar cada 100ms
     const totalSteps = duration / interval;
     let currentStep = 0;
